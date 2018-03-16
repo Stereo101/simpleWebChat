@@ -1,0 +1,57 @@
+<script type="text/javascript">
+	function postIt(skipPost) {
+		if(skipPost) {
+			var t = "";
+		} else {
+			var t = document.getElementById("t").value;
+		}
+		
+		var xhr = new XMLHttpRequest();
+		xhr.open("POST","/",false);
+		xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+		xhr.send("" + t);
+		
+		if(!skipPost) {
+			document.getElementById("t").value = "";
+		}
+		
+		if(xhr.responseText.trim() != "") {
+			console.log(xhr.responseText)
+			
+			if((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+				document.getElementById("textBox").innerHTML += (xhr.responseText + "<br>");
+				window.scrollTo(0,document.body.scrollHeight);
+			} else {
+				document.getElementById("textBox").innerHTML += (xhr.responseText + "<br>");
+			}
+			
+			
+		}
+		
+		
+		
+		
+	}
+	
+	document.onkeypress = function (e) {
+		e = e || window.event;
+		if(e.keyCode == 13) {
+			postIt(false);
+		}
+	};
+	
+	setInterval(postIt,500,true);
+	
+</script>
+
+
+<html>
+<div id="textBox" sytle="padding-bottom:100px;"></div>
+
+<div id="bottomBar" style="position:fixed;z-index:100;bottom:0;left:0;width:100%;">
+	<input style="width:100%;" type="text" id="t">
+	<!--<input style="width:10;" type="button" value="send" onclick="postIt(false);">-->
+</div>
+
+
+</html>
