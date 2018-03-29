@@ -2,17 +2,34 @@ import socket
 import threading
 import re
 import time
+import datetime
 import random
 
+names = open("names.txt","r").read().strip().split("\n")
 indexHTML_bytes = open("index.html","r").read().encode("utf-8")
 postSemaphore = threading.BoundedSemaphore(1)
 postArr = []
 cookieDict = {}
 
+def randomUsername():
+	return random.choice(names)
+	
+def randomColor():
+	letters = list("9ABCDEF")
+	color = []
+	for i in range(6):
+		color += [random.choice(letters)]
+		
+	a,b = random.choice([[0,1],[2,3],[4,5]])
+	for i in range(a,b):
+		color[i] = random.choice(list("F"))
+	
+	return "`" + "".join(color)
+
 def generateCookie():
-	i = random.randint(1,200000000000)
+	i = random.randint(1,2000000000000000)
 	t = time.time()
-	cookieDict[str(i)] = t
+	cookieDict[str(i)] = [t,randomColor(),randomUsername()]
 	print("cookie",i,"added at time",t)
 	return str(i)
 
@@ -61,7 +78,7 @@ def connectionHandler(client,address):
 			cookie = m.group("cookie")
 			
 	if(cookie not in cookieDict):
-		cookieDict[cookie] = time.time()
+		cookieDict[cookie] = [time.time(),randomColor(),randomUsername()]
 			
 	if(type == "GET"):
 		if(resource == "/"):
@@ -73,7 +90,7 @@ def connectionHandler(client,address):
 		message = request.split("\r\n\r\n")[1]
 		if(message != ""):
 			print(message)
-			handlePost(client,address,message)
+			handlePost(client,address,message,cookie)
 		sendPosts(client,address,cookie)
 	
 	client.close()
@@ -85,20 +102,29 @@ def sendIndex(client,address):
 	print("sent")
 	
 	
-def handlePost(client,address,message):
+def handlePost(client,address,message,cookie):
 	global postArr
+	message = message.replace("`","?")	
 	postSemaphore.acquire()
-	postArr.append([time.time(),message])
+	username = "???"
+	color = "`FFFFFF"
+	if(cookie in cookieDict):
+		username = cookieDict[cookie][2]
+		color = cookieDict[cookie][1]
+	postArr.append([time.time(),"[" + datetime.datetime.fromtimestamp(time.time()).strftime('%H:%M:%S') + " " + username + "] " + message,color])
 	postSemaphore.release()
-	
+		
 def sendPosts(client,address,cookie):
 	global postArr
 	message = ""
+	color = "`FFFFFF"
 	if(cookie in cookieDict):
-		ct = cookieDict[cookie]
+		ct = cookieDict[cookie][0]
+		cookieDict[cookie][0] = time.time()
 	else:
 		print("COOKIE NOT FOUND?")
 		ct = time.time()
+		cookieDict[cookie] = [ct,randomColor(),randomUsername()]
 		
 	popCount = 0
 	tCutoff = time.time() - 5
@@ -108,14 +134,13 @@ def sendPosts(client,address,cookie):
 		if(p[0] < tCutoff):
 			popCount += 1
 		elif(ct < p[0]):
-			message += p[1]
-			message += "\n"
+			message += p[2] + "; " + p[1]
 	if(popCount > 0):
 		postArr = postArr[popCount:]
 		print(popCount,"posts decayed",len(postArr),"posts still saved")
 	postSemaphore.release()
 	
-	cookieDict[cookie] = time.time()
+	
 	client.sendall(formatHTTP(message.encode("utf-8"),skipCookie=True))
 	
 	

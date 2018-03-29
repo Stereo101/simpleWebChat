@@ -1,4 +1,6 @@
 <script type="text/javascript">
+	
+	
 	function postIt(skipPost) {
 		if(skipPost) {
 			var t = "";
@@ -9,24 +11,48 @@
 		var xhr = new XMLHttpRequest();
 		xhr.open("POST","/",false);
 		xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-		xhr.send("" + t);
+		xhr.send(t);
 		
 		if(!skipPost) {
 			document.getElementById("t").value = "";
 		}
 		
+		
 		if(xhr.responseText.trim() != "") {
-			console.log(xhr.responseText)
+			var scrollToBottom = ((window.innerHeight + window.scrollY) >= document.body.offsetHeight);
+			var messages = xhr.responseText.split("`").slice(1);
 			
-			if((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-				document.getElementById("textBox").innerHTML += (xhr.responseText + "<br>");
-				window.scrollTo(0,document.body.scrollHeight);
-			} else {
-				document.getElementById("textBox").innerHTML += (xhr.responseText + "<br>");
+			for(var i=0; i<messages.length;i++) {
+				var textColor = "#" + messages[i].split(";",1)[0];
+				var message = messages[i].split(";",2)[1];
+				var messageBox = document.createElement("div");
+				
+				messageBox.style.borderRadius = "5px";
+				messageBox.style.border = "1px solid";
+				messageBox.style.backgroundColor = textColor;
+				messageBox.style.padding = "9px";
+				messageBox.style.color = "#000000";
+				messageBox.style.fontFamily = "Helvetica";
+				messageBox.style.display = "inline-block";
+				messageBox.style.marginBottom = "5px";
+				messageBox.appendChild(document.createTextNode(message));
+				var br = document.createElement("br");
+				
+				
+					
+				
+				document.getElementById("textBox").appendChild(messageBox);
+				document.getElementById("textBox").appendChild(br);
+				
+				
+				
 			}
 			
-			
+			if(scrollToBottom) {
+					window.scrollTo(0,document.body.scrollHeight);
+			}
 		}
+		
 		
 		
 		
@@ -40,18 +66,24 @@
 		}
 	};
 	
-	setInterval(postIt,500,true);
+	setInterval(postIt,1000,true);
 	
 </script>
 
 
-<html>
-<div id="textBox" sytle="padding-bottom:100px;"></div>
-
-<div id="bottomBar" style="position:fixed;z-index:100;bottom:0;left:0;width:100%;">
-	<input style="width:100%;" type="text" id="t">
-	<!--<input style="width:10;" type="button" value="send" onclick="postIt(false);">-->
-</div>
-
-
+<html style="background-color:#eeeeee">
+	<body>
+		<div id="wrapper" style="min-height:100%">
+			
+			<div id="content" style="overflow:auto;">
+				<div id="textBox"></div>
+			</div>
+			
+			<div id="footer" style="bottom:0;left:0;width:100%">
+				<input style="width:100%;" type="text" id="t">
+			</div>
+			
+			<!--<input style="width:10;" type="button" value="send" onclick="postIt(false);">-->
+		</div>
+	</body>
 </html>
