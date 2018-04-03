@@ -41,6 +41,7 @@ def formatHTTP(response,cookie=None,skipCookie=False):
 	httpOK += "\r\n"
 	#l = len(response)
 	header = (httpOK).encode("utf-8")
+	#print("SENDING:::\n" + str(header) + str(response) + "\n")
 	return header + response
 
 	
@@ -62,7 +63,7 @@ def connectionHandler(client,address):
 	
 	type = ""
 	group = ""
-	cookie = -1
+	cookie = None
 	if(m is not None):
 		if(m.group("type") is not None):
 			type = m.group("type")
@@ -82,7 +83,7 @@ def connectionHandler(client,address):
 			
 	if(type == "GET"):
 		if(resource == "/"):
-			sendIndex(client,address)
+			sendIndex(client,address,cookie)
 		else:
 			print("resource not found")
 			
@@ -96,9 +97,12 @@ def connectionHandler(client,address):
 	client.close()
 	
 	
-def sendIndex(client,address):
+def sendIndex(client,address,cookie):
 	print("SEND INDEX")
-	client.sendall(formatHTTP(indexHTML_bytes))
+	skip = False
+	if(cookie is not None):
+		skip = True
+	client.sendall(formatHTTP(indexHTML_bytes,skipCookie=skip))
 	print("sent")
 	
 	
