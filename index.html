@@ -40,9 +40,6 @@
 				
 				document.getElementById("textBox").appendChild(messageBox);
 				document.getElementById("textBox").appendChild(br);
-				
-				
-				
 			}
 			
 			if(scrollToBottom) {
@@ -69,18 +66,19 @@
 
 
 <html style="background-color:#eeeeee">
-	<body>
+	<body style="margin-bottom:25px;">
 		<div id="wrapper" style="min-height:100%">
 			
 			<div id="content" style="overflow:auto;">
 				<div id="textBox"></div>
 			</div>
 			
-			<div id="footer" style="bottom:0;left:0;width:100%">
-				<input style="width:100%;" type="text" id="t">
-			</div>
+			
 			
 			<!--<input style="width:10;" type="button" value="send" onclick="postIt(false);">-->
 		</div>
 	</body>
+	<div id="footer">
+				<input style="position:fixed;height: 25px;bottom:0;left:0;right:0;width:100%;margin-bottom:0px;" type="text" id="t">
+	</div>
 </html>
